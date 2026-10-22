@@ -15,7 +15,7 @@ class PdfTools < Formula
   ].freeze
 
   def install
-    python = Formula["python@3.13"].opt_bin/"python3.13"
+    python = formula_opt_bin("python@3.13")/"python3.13"
     venv = virtualenv_create(libexec, python)
     pip = [python, "-m", "pip", "--python=#{venv.root}/bin/python", "install", "--no-compile"]
 
@@ -52,7 +52,7 @@ class PdfTools < Formula
     system bin/"image-pad-square", "a.png", "--size", "64", "-o", "sq.png"
     system bin/"image-compress", "a.png", "--quality", "50", "-o", "a.jpg"
 
-    system Formula["ffmpeg"].opt_bin/"ffmpeg", "-loglevel", "error", "-f", "lavfi",
+    system formula_opt_bin("ffmpeg")/"ffmpeg", "-loglevel", "error", "-f", "lavfi",
            "-i", "testsrc=duration=1:size=320x240:rate=10", "in.mp4"
     system bin/"video-compress", "in.mp4", "--no-audio", "-o", "out.mp4"
     assert_path_exists testpath/"out.mp4"
