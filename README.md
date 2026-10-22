@@ -8,7 +8,15 @@ brew trust Larry8668/pdf-tools     # Homebrew 7+: third-party taps must be trust
 brew install pdf-tools
 ```
 
-Installs `pdf-merge`, `pdf-compress`, `pdf-remove-pages`, `pdf-redact`, `pdf-redact-area`, `pdf-render-page`, `image-compress`, `image-pad-square` and `video-compress`. `ffmpeg` and Python 3.13 come in as dependencies.
+Installs one command, `pdf-tools`. Run it on its own to list everything it does, and `pdf-tools help <command>` for options:
+
+```sh
+pdf-tools merge a.pdf photo.png b.pdf -o merged.pdf
+pdf-tools redact doc.pdf --terms "Jane Doe,12345" -o redacted.pdf
+pdf-tools video-compress rec.mov --screenshare -o rec.mp4
+```
+
+`ffmpeg` and Python 3.13 come in as dependencies.
 
 Paths are relative to the folder you run a command from. There's no fixed input or output folder, and `-o out/file.pdf` creates `out/` if needed.
 
