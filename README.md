@@ -1,6 +1,6 @@
 # homebrew-pdf-tools
 
-Homebrew tap for [pdf-tools](https://github.com/Larry8668/pdf-tools): offline command-line tools to merge, compress, and redact PDFs, plus image and video compression.
+Homebrew tap for [pdf-tools](https://github.com/Larry8668/pdf-tools): offline command-line tools to merge, compress, and redact PDFs, remove image backgrounds, and compress images and videos.
 
 ```sh
 brew tap Larry8668/pdf-tools
@@ -13,8 +13,11 @@ Installs one command, `pdf-tools`. Run it on its own to list everything it does,
 ```sh
 pdf-tools merge a.pdf photo.png b.pdf -o merged.pdf
 pdf-tools redact doc.pdf --terms "Jane Doe,12345" -o redacted.pdf
+pdf-tools image-remove-bg photo.jpg -o photo.png
 pdf-tools video-compress rec.mov --screenshare -o rec.mp4
 ```
+
+`image-remove-bg` runs on Apple Silicon (onnxruntime ships no Intel Mac wheels) and downloads its model, about 220 MB, on first use.
 
 `ffmpeg` and Python 3.13 come in as dependencies.
 
