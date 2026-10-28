@@ -3,9 +3,8 @@ class PdfTools < Formula
 
   desc "Offline CLI for PDFs, image background removal, and image and video compression"
   homepage "https://github.com/Larry8668/pdf-tools"
-  url "https://github.com/Larry8668/pdf-tools/archive/6cdf6c5b859c405eb73455069066b50cb810ea0a.tar.gz"
-  version "0.3.0"
-  sha256 "5e0803af21bd474bcbd8b25330057eee06ff1e8efd52dfca0f1f9a717ae93d09"
+  url "https://github.com/Larry8668/pdf-tools/archive/refs/tags/v0.3.0.tar.gz"
+  sha256 "5a32b2d23916186ad6b149cbf0d3b2d2c9c70fa1db7f6af25d0e16438d862a69"
 
   depends_on "ffmpeg"
   depends_on "python@3.13"
