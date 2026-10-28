@@ -1,10 +1,11 @@
 class PdfTools < Formula
   include Language::Python::Virtualenv
 
-  desc "Offline CLI to merge, compress and redact PDFs, plus image and video compression"
+  desc "Offline CLI for PDFs, image background removal, and image and video compression"
   homepage "https://github.com/Larry8668/pdf-tools"
-  url "https://github.com/Larry8668/pdf-tools/archive/refs/tags/v0.2.0.tar.gz"
-  sha256 "0f0e9ddca618648a5cada7a89541e66d214d784d9828694fd9c82e68cf7d24aa"
+  url "https://github.com/Larry8668/pdf-tools/archive/6cdf6c5b859c405eb73455069066b50cb810ea0a.tar.gz"
+  version "0.3.0"
+  sha256 "5e0803af21bd474bcbd8b25330057eee06ff1e8efd52dfca0f1f9a717ae93d09"
 
   depends_on "ffmpeg"
   depends_on "python@3.13"
@@ -28,6 +29,9 @@ class PdfTools < Formula
 
       Paths are relative to the folder you run a command from. Nothing is read from or
       written to a fixed folder: `-o out/merged.pdf` creates ./out/ if it is missing.
+
+      `pdf-tools image-remove-bg` downloads its model (about 220 MB) on first use to
+      ~/.cache/pdf-tools/models. Images are processed locally and never uploaded.
     EOS
   end
 
@@ -58,6 +62,34 @@ class PdfTools < Formula
            "-i", "testsrc=duration=1:size=320x240:rate=10", "in.mp4"
     system bin/"pdf-tools", "video-compress", "in.mp4", "--no-audio", "-o", "out.mp4"
     assert_path_exists testpath/"out.mp4"
+
+    assert_match "usage: pdf-tools image-remove-bg", shell_output("#{bin}/pdf-tools help image-remove-bg")
+    ENV["PDF_TOOLS_MODEL_DIR"] = testpath/"models"
+    assert_match "not downloaded yet",
+                 shell_output("#{bin}/pdf-tools image-remove-bg a.png --no-download -o nobg.png 2>&1", 1)
+
+    # Run background removal end to end without the 220 MB model: a 158-byte stand-in
+    # with the same input/output shape (mean of RGB, times 10) marks bright pixels as
+    # foreground, which checks onnxruntime and the whole pipeline under this Python.
+    (testpath/"models").mkpath
+    (testpath/"models/birefnet-general-lite.onnx").binwrite <<~B64.unpack1("m")
+      CAg6kwEKMAoBeBIBbSIKUmVkdWNlTWVhbioLCgRheGVzQAGgAQcqDwoIa2VlcGRpbXMYAaABAgoOCgFtCgFrEgF5IgNN
+      dWwSBGZha2UqCxABIgQAACBBQgFrWh0KAXgSGAoWCAESEgoCCAEKAggDCgMIgAgKAwiACGIdCgF5EhgKFggBEhIKAggB
+      CgIIAQoDCIAICgMIgAhCBAoAEBE=
+    B64
+    system libexec/"bin/python", "-c", <<~PY
+      from PIL import Image
+      im = Image.new("RGB", (300, 200), "black")
+      im.paste((255, 255, 255), (100, 50, 200, 150))
+      im.save("square.png")
+    PY
+    system bin/"pdf-tools", "image-remove-bg", "square.png", "--crop", "-o", "cut.png"
+    system libexec/"bin/python", "-c", <<~PY
+      from PIL import Image
+      im = Image.open("cut.png")
+      assert im.mode == "RGBA" and 100 <= im.width < 120, (im.mode, im.size)
+      assert im.getchannel("A").getpixel((im.width // 2, im.height // 2)) > 240
+    PY
 
     assert_match "No matching searchable text",
                  shell_output("#{bin}/pdf-tools redact out/merged.pdf --term nope -o r.pdf 2>&1", 1)
